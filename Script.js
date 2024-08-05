@@ -16,10 +16,13 @@ let todos = [
     completed: true,
   },
 ];
+
+let mode = "add";
+let selectedId = null;
 const generateTodo = ({ title, id, completed }) =>
   completed
-// if todo is completed then add line-through to the title
-    ? `   <div
+    ? // if todo is completed then add line-through to the title
+      `   <div
 id="task"
 class="flex justify-between items-center border-b border-slate-200 py-3 px-2 border-l-4 border-l-transparent"
 >
@@ -40,7 +43,7 @@ class="flex justify-between items-center border-b border-slate-200 py-3 px-2 bor
       />
     </svg>
   </div>
-  <div class="text-slate-500 line-through">${title}</div>
+  <div onClick="handleEdit('${id}')"  class="text-slate-500 line-through">${title}</div>
 </div>
 <div onClick="handleDelete('${id}')"  >
   <svg
@@ -59,8 +62,8 @@ class="flex justify-between items-center border-b border-slate-200 py-3 px-2 bor
   </svg>
 </div>
 </div>`
-// if todo is not completed then remove line-through from the title
-    : `   <div
+    : // if todo is not completed then remove line-through from the title
+      `   <div
 id="task"
 class="flex justify-between items-center border-b border-slate-200 py-3 px-2 border-l-4 border-l-transparent bg-gradient-to-r from-transparent to-transparent hover:from-slate-100 transition ease-linear duration-150"
 >
@@ -81,7 +84,7 @@ class="flex justify-between items-center border-b border-slate-200 py-3 px-2 bor
       />
     </svg>
   </div>
-  <div>${title}</div>
+  <div onClick="handleEdit('${id}')">${title}</div>
 </div>
 <div onClick="handleDelete('${id}')" >
   <svg
@@ -108,9 +111,9 @@ const randomId = () => {
   secondPart = ("000" + secondPart.toString(36)).slice(-3);
   return firstPart + secondPart;
 };
-// function to render the list of todos on the screen 
+// function to render the list of todos on the screen
 const renderList = () => {
-  list.innerHTML = 
+  list.innerHTML =
     todos.length === 0
       ? `<div class='text-center text-blue-500' >Add todos to get started</div>`
       : "";
@@ -120,7 +123,7 @@ const renderList = () => {
     list.appendChild(node);
   });
 };
-// function to add todo to the list of todos 
+// function to add todo to the list of todos
 const addTodo = () => {
   if (input.value === "") return alert("Please enter a todo");
   const todo = {
@@ -132,19 +135,50 @@ const addTodo = () => {
   input.value = "";
   renderList();
 };
-// function to delete todo from the list of todos 
+// function to delete todo from the list of todos
 const handleDelete = (id) => {
   const filteredTodos = todos.filter((todo) => todo.id !== id);
   todos = filteredTodos;
   renderList();
 };
+// function to edit todo from the list of todos
+// it will change the mode to edit and set the selectedId to the id of the todo to be edited
+const handleEdit = (id) => {
+  console.log(id);
+  const todo = todos.find((todo) => todo.id === id);
+  input.value = todo.title;
+  addTodoBtn.innerHTML = "Edit";
+  mode = "edit";
+  selectedId = id;
+};
 // function to mark todo as complete or incomplete
 const markAsComplete = (id) => {
-  const todo = todos.find(todo=>todo.id===id)
+  const todo = todos.find((todo) => todo.id === id);
   todo.completed = !todo.completed;
   renderList();
 };
+
+// edit todo
+const editTodo = () => {
+  if (input.value === "") return alert("Please enter a todo");
+  const todo = todos.find((todo) => todo.id === selectedId);
+  todo.title = input.value;
+  renderList();
+  input.value = "";
+  selectedId = null;
+  mode = "add";
+  addTodoBtn.innerHTML = "Add";
+};
+
 // event listeners for the buttons and input fields
-addTodoBtn.addEventListener("click", addTodo);
+addTodoBtn.addEventListener("click", () =>
+  mode === "add" ? addTodo() : editTodo()
+);
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    mode === "add" ? addTodo() : editTodo();
+  }
+});
 
 renderList();
